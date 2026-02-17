@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Greeni Oyunu</title>
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    background:#87ceeb;
+}
+canvas{
+    background:#6bcf5b;
+    display:block;
+}
+#score{
+    position:absolute;
+    top:10px;
+    left:10px;
+    font-size:20px;
+    font-family:Arial;
+    color:white;
+}
+</style>
+</head>
+<body>
+
+<div id="score">Skor: 0</div>
+<canvas id="game"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let gravity = 0.6;
+let score = 0;
+
+let player = {
+    x:100,
+    y:300,
+    width:40,
+    height:40,
+    color:"green",
+    dy:0,
+    jumpPower:-12,
+    grounded:false
+};
+
+let keys = {};
+
+let coin = {
+    x:Math.random()*canvas.width,
+    y:Math.random()*(canvas.height-100),
+    size:20
+};
+
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+function update(){
+
+    if(keys["ArrowRight"]) player.x += 6;
+    if(keys["ArrowLeft"]) player.x -= 6;
+
+    if(keys[" "] && player.grounded){
+        player.dy = player.jumpPower;
+        player.grounded = false;
+    }
+
+    player.dy += gravity;
+    player.y += player.dy;
+
+    if(player.y + player.height > canvas.height){
+        player.y = canvas.height - player.height;
+        player.dy = 0;
+        player.grounded = true;
+    }
+
+    // Coin çarpışma
+    if(player.x < coin.x + coin.size &&
+       player.x + player.width > coin.x &&
+       player.y < coin.y + coin.size &&
+       player.y + player.height > coin.y){
+        
+        score++;
+        document.getElementById("score").innerText = "Skor: " + score;
+        coin.x = Math.random()*canvas.width;
+        coin.y = Math.random()*(canvas.height-100);
+    }
+}
+
+function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // Oyuncu
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+
+    // Coin
+    ctx.fillStyle = "gold";
+    ctx.beginPath();
+    ctx.arc(coin.x, coin.y, coin.size, 0, Math.PI*2);
+    ctx.fill();
+}
+
+function gameLoop(){
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+
+</body>
+</html>
+
